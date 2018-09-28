@@ -12,7 +12,8 @@ RUN apt-get update && apt-get install -y \
     lsb-release \
     openssh-server \
     sudo \
-    python
+    python \
+    golang
 
 # ensure we have the en_US.UTF-8 locale available
 RUN locale-gen en_US.UTF-8
@@ -27,11 +28,11 @@ RUN if ! getent passwd vagrant; then useradd -d /home/vagrant -m -s /bin/bash va
 
 # add the vagrant insecure public key
 RUN mkdir -p /home/vagrant/.ssh \
-    && chmod 0700 /home/vagrant/.ssh \
-    && wget --no-check-certificate \
-      https://raw.github.com/mitchellh/vagrant/master/keys/vagrant.pub \
-      -O /home/vagrant/.ssh/authorized_keys \
-    && chmod 0600 /home/vagrant/.ssh/authorized_keys \
+    && chmod 0700 /home/vagrant/.ssh
+
+COPY vagrant.pub  /home/vagrant/.ssh/authorized_keys
+
+RUN chmod 0600 /home/vagrant/.ssh/authorized_keys \
     && chown -R vagrant /home/vagrant/.ssh
 
 # don't clean packages, we might be using vagrant-cachier
@@ -47,4 +48,4 @@ CMD /usr/sbin/sshd -D \
     -o PasswordAuthentication=yes\
     -o PidFile=/tmp/sshd.pid
 
-#docker build -t wolferhua/ubuntu:18.04-vagrant .
+#docker build --no-cache -t wolferhua/ubuntu:18.04-vagrant .
